@@ -1,0 +1,390 @@
+using System;
+using System.Collections.Generic;
+using System.Xml.Linq;
+
+interface IMenu
+{
+    void DisplayMenu();
+    void HandleMenuChoice(int choice);
+}
+
+class Menu : IMenu
+{
+    public void DisplayMenu()
+    {
+        Console.WriteLine("Library Management System");
+        Console.WriteLine("1. Add Book");
+        Console.WriteLine("2. Remove Book");
+        Console.WriteLine("3. Display All Books");
+        Console.WriteLine("4. Search Books by Genre");
+        Console.WriteLine("5. Add Type of Book");
+        Console.WriteLine("6. Update Type of Book");
+        Console.WriteLine("7. Delete Type of Book");
+        Console.WriteLine("8. Display All Types of Books");
+        Console.WriteLine("9. Exit");
+    }
+public void HandleMenuChoice(int choice)
+    {
+
+    }
+}
+
+class Login
+{
+    public string Name { get; set; }
+    public int Age { get; set; }
+public Login(string name, int age)
+    {
+        Name = name;
+        Age = age;
+    }
+
+    public void DisplayUserInfo()
+    {
+        Console.WriteLine($"User: {Name}, Age: {Age}");
+    }
+}
+
+class Manager : IMenu
+{
+    private List<Book> Books { get; }
+    internal List<TypeOfBook> TypesOfBook { get; }
+
+    public Manager()
+    {
+        Books = new List<Book>();
+        TypesOfBook = new List<TypeOfBook>();
+    }
+    public Manager(Login login) : this()
+    {
+
+    }
+
+
+    public void AddBook(Book book)
+    {
+        Books.Add(book);
+        Console.WriteLine("Book added successfully.");
+    }
+
+    public void RemoveBook(Book book)
+    {
+        if (Books.Contains(book))
+        {
+            Books.Remove(book);
+            Console.WriteLine("Book removed successfully.");
+        }
+        else
+        {
+            Console.WriteLine("Book not found.");
+        }
+    }
+
+    public void DisplayAllBooks()
+    {
+        Console.WriteLine("All Books:");
+        foreach (Book book in Books)
+        {
+            book.DisplayBookInfo();
+        }
+    }
+
+    public List<Book> SearchBooksByGenre(string genre)
+    {
+        List<Book> matchingBooks = new List<Book>();
+        foreach (Book b in Books)
+        {
+            if (b.Type.Genre == genre)
+            {
+                matchingBooks.Add(b);
+            }
+        }
+        return matchingBooks;
+    }
+
+    public void AddTypeOfBook(TypeOfBook typeOfBook)
+    {
+        TypesOfBook.Add(typeOfBook);
+        Console.WriteLine("Type of Book added successfully.");
+    }
+
+    public void UpdateTypeOfBook(TypeOfBook typeOfBook)
+    {
+        Console.WriteLine("Enter the new genre:");
+        string newGenre = Console.ReadLine();
+
+        typeOfBook.Genre = newGenre;
+        Console.WriteLine("Type of Book updated successfully.");
+    }
+
+    public void DeleteTypeOfBook(TypeOfBook typeOfBook)
+    {
+        TypesOfBook.Remove(typeOfBook);
+        Console.WriteLine("Type of Book deleted successfully.");
+    }
+
+    public void DisplayAllTypesOfBook()
+    {
+        Console.WriteLine("All Types of Book:");
+        foreach (TypeOfBook typeOfBook in TypesOfBook)
+        {
+            Console.WriteLine($"Genre: {typeOfBook.Genre}");
+        }
+    }
+
+    public void DisplayMenu()
+    {
+        Menu menu = new Menu();
+        menu.DisplayMenu();
+    }
+
+    public void HandleMenuChoice(int choice)
+    {
+        switch (choice)
+        {
+            case 1:
+                Console.WriteLine("Enter the book title:");
+                string title = Console.ReadLine();
+                Console.WriteLine("Enter the book author:");
+                string author = Console.ReadLine();
+                Console.WriteLine("Enter the book genre:");
+                string genre = Console.ReadLine();
+
+                TypeOfBook typeOfBook = TypesOfBook.Find(t => t.Genre == genre);
+                if (typeOfBook == null)
+                {
+                    Console.WriteLine("Invalid genre. Please add the type of book first.");
+                    return;
+                }
+
+                Book book = new Book(title, author, typeOfBook);
+                AddBook(book);
+                break;
+            case 2:
+                Console.WriteLine("Enter the book title to remove:");
+                string bookTitle = Console.ReadLine();
+
+                Book bookToRemove = Books.Find(b => b.Title == bookTitle);
+                if (bookToRemove == null)
+                {
+                    Console.WriteLine("Book not found.");
+                    return;
+                }
+
+                RemoveBook(bookToRemove);
+                break;
+            case 3:
+                DisplayAllBooks();
+                break;
+            case 4:
+                Console.WriteLine("Enter the genre to search:");
+                string searchGenre = Console.ReadLine();
+
+                List<Book> matchingBooks = SearchBooksByGenre(searchGenre);
+                if (matchingBooks.Count > 0)
+                {
+                    Console.WriteLine("Matching Books:");
+                    foreach (Book matchingBook in matchingBooks)
+                    {
+                        matchingBook.DisplayBookInfo();
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("No books found for the given genre.");
+                }
+                break;
+            case 5:
+                Console.WriteLine("Enter the genre to add:");
+                string newGenre = Console.ReadLine();
+
+                TypeOfBook newTypeOfBook = new TypeOfBook(newGenre);
+                AddTypeOfBook(newTypeOfBook);
+                break;
+            case 6:
+                Console.WriteLine("Enter the genre to update:");
+                string genreToUpdate = Console.ReadLine();
+
+                TypeOfBook typeToUpdate = TypesOfBook.Find(t => t.Genre == genreToUpdate);
+                if (typeToUpdate == null)
+                {
+                    Console.WriteLine("Genre not found.");
+                    return;
+                }
+
+                UpdateTypeOfBook(typeToUpdate);
+                break;
+            case 7:
+                Console.WriteLine("Enter the genre to delete:");
+                string genreToDelete = Console.ReadLine();
+
+                TypeOfBook typeToDelete = TypesOfBook.Find(t => t.Genre == genreToDelete);
+                if (typeToDelete == null)
+                {
+                    Console.WriteLine("Genre not found.");
+                    return;
+                }
+
+                DeleteTypeOfBook(typeToDelete);
+                break;
+            case 8:
+                DisplayAllTypesOfBook();
+                break;
+            case 9:
+                Console.WriteLine("Exiting the program...");
+                Environment.Exit(0);
+                break;
+            default:
+                Console.WriteLine("Invalid choice. Please try again.");
+                break;
+        }
+    }
+}
+class User : IMenu
+{
+    private Login UserLogin { get; }
+    private List<TypeOfBook> TypesOfBook { get; }
+    private Manager LibraryManager { get; } 
+
+    public User(Login login, Manager manager)
+    {
+        UserLogin = login;
+        LibraryManager = manager;
+        TypesOfBook = manager.TypesOfBook;
+    }
+
+    public void DisplayMenu()
+    {
+        Console.WriteLine("Library Management System");
+        Console.WriteLine("1. Display User Information");
+        Console.WriteLine("2. View Book Types");
+        Console.WriteLine("3. View Book Genres");
+        Console.WriteLine("4. Exit");
+    }
+
+    public void HandleMenuChoice(int choice)
+    {
+        switch (choice)
+        {
+            case 1:
+                UserLogin.DisplayUserInfo();
+                break;
+            case 2:
+                DisplayBookTypes();
+                break;
+            case 3:
+                DisplayBookGenres();
+                break;
+            case 4:
+                Console.WriteLine("Exiting...");
+                Environment.Exit(0);
+                break;
+            default:
+                Console.WriteLine("Invalid choice. Please try again.");
+                break;
+        }
+    }
+
+    private void DisplayBookTypes()
+    {
+        Console.WriteLine("Book Types:");
+        foreach (TypeOfBook typeOfBook in TypesOfBook)
+        {
+            Console.WriteLine($"- {typeOfBook.Genre}");
+        }
+    }
+
+    private void DisplayBookGenres()
+    {
+        Console.WriteLine("Book Genres:");
+        HashSet<string> genres = new HashSet<string>();
+        foreach (TypeOfBook typeOfBook in TypesOfBook)
+        {
+            genres.Add(typeOfBook.Genre);
+        }
+        foreach (string genre in genres)
+        {
+            Console.WriteLine($"- {genre}");
+        }
+    }
+}
+
+class Book
+{
+    public string Title { get; set; }
+    public string Author { get; set; }
+    public TypeOfBook Type { get; set; }
+
+public Book(string title, string author, TypeOfBook type)
+    {
+        Title = title;
+        Author = author;
+        Type = type;
+    }
+
+    public void DisplayBookInfo()
+    {
+        Console.WriteLine($"Title: {Title}, Author: {Author}, Genre: {Type.Genre}");
+    }
+}
+
+class TypeOfBook
+{
+    public string Genre { get; set; }
+
+public TypeOfBook(string genre)
+    {
+        Genre = genre;
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        Manager manager = new Manager();
+        while (true)
+        {
+            Console.WriteLine("Enter your name:");
+            string name = Console.ReadLine();
+            Console.WriteLine("Enter your age:");
+            int age = int.Parse(Console.ReadLine());
+
+            Login login = new Login(name, age);
+            login.DisplayUserInfo();
+
+            IMenu userMenu = null;
+            Console.WriteLine("Are you a manager (M) or a user (U)?");
+            string userType = Console.ReadLine();
+
+            if (userType.ToLower() == "m")
+            {
+                userMenu = new Manager(login);
+            }
+            else if (userType.ToLower() == "u")
+            {
+                userMenu = new User(login, manager);
+            }
+            else
+            {
+                Console.WriteLine("Invalid user type.");
+                continue;
+            }
+
+            while (true)
+            {
+                userMenu.DisplayMenu();
+                Console.WriteLine("Enter your choice:");
+                string choiceString = Console.ReadLine();
+
+                if (choiceString.ToLower() == "exit")
+                {
+                    break; 
+                }
+
+                int choice = int.Parse(choiceString);
+                userMenu.HandleMenuChoice(choice);
+            }
+        }
+    }
+}
